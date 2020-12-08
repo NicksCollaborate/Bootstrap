@@ -22,7 +22,7 @@ struct ClrArgs
 {
     static const LPCWSTR DELIM;
 
-    ClrArgs(LPCWSTR command)
+    explicit ClrArgs(LPCWSTR command)
     {
         int i = 0;
         wstring s(command);
@@ -49,12 +49,12 @@ const LPCWSTR ClrArgs::DELIM = L"\t"; // delimiter
 //
 // Function to start the DotNet runtime and invoke a managed assembly
 //
-extern "C" __declspec(dllexport) HRESULT ImplantDotNetAssembly(_In_ LPCTSTR lpCommand)
+extern "C" [[maybe_unused]] __declspec(dllexport) HRESULT ImplantDotNetAssembly(_In_ LPCTSTR lpCommand)
 {
     HRESULT hr;
-    ICLRMetaHost *pMetaHost = NULL;
-    ICLRRuntimeInfo *pRuntimeInfo = NULL;
-    ICLRRuntimeHost *pClrRuntimeHost = NULL;
+    ICLRMetaHost *pMetaHost = nullptr;
+    ICLRRuntimeInfo *pRuntimeInfo = nullptr;
+    ICLRRuntimeHost *pClrRuntimeHost = nullptr;
 
     // build runtime
     hr = CLRCreateInstance(CLSID_CLRMetaHost, IID_PPV_ARGS(&pMetaHost));
@@ -85,23 +85,4 @@ extern "C" __declspec(dllexport) HRESULT ImplantDotNetAssembly(_In_ LPCTSTR lpCo
     pClrRuntimeHost->Release();
 
     return hr;
-}
-
-//
-// Dll entry point
-//
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
-{
-    // attempting to load .NET Framework inside of DllMain ATTACH will result in loader lock
-    // more info: http://msdn.microsoft.com/en-us/library/ms172219.aspx
-
-    switch (ul_reason_for_call)
-    {
-        case DLL_PROCESS_ATTACH:
-        case DLL_THREAD_ATTACH:
-        case DLL_THREAD_DETACH:
-        case DLL_PROCESS_DETACH:
-            break;
-    }
-    return TRUE;
 }
